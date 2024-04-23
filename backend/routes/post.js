@@ -4,7 +4,8 @@ const passport = require("passport");
 const Post = require('../models/Post');
 const ProfilePicture = require('../models/ProfilePicture');
 const multer = require('multer'); // Import multer for handling file uploads
-const upload = multer(); // Initialize multer
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 router.post("/create", passport.authenticate("jwt", { session: false }), upload.single('picture'), async (req, res) => {
 
@@ -23,10 +24,14 @@ router.post("/create", passport.authenticate("jwt", { session: false }), upload.
         return res.status(400).json({ err: "Description is required!" })
     }
 
-    // Convert picture data to base64 string
-    const picturePath = pictureData.buffer.toString('base64');
-    const userPicturePath = profilePicture.image;
+    if (!req.file || !description) {
+        return res.status(400).json({ error: "Both description and picture are required!" });
+    }
 
+    const { buffer } = req.file; // Get the picture file buffer
+    const picturePath = buffer.toString('base64');
+    const userPicturePath = profilePicture.image;
+    
     const postObj = {
         userId: user._id,
         userName: user.name,

@@ -5,6 +5,7 @@ import Alert from '../Components/Alert';
 import Profile from './Profile';
 import DefaultPost from '../Components/DefaultPost';
 import Posts from '../Components/Posts';
+import Users from '../Components/AllUsers';
 
 const Home = () => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -33,10 +34,12 @@ const Home = () => {
             </div>
             <div className="col col-6">
               <DefaultPost isPostPic={true} />
-              <br/>
-              <Posts/>
+              <br />
+              <div style={{ maxHeight: '60vh', overflowY: 'auto' }} className="posts-container"> {/* Set a fixed height and make it scrollable */}
+                <Posts />
+              </div>
             </div>
-            <div className="col col-3">Recommendation System</div>
+            <div className="col col-3"><Users/></div>
           </div>
         </div>
       ) : (

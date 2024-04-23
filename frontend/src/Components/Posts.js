@@ -1,6 +1,9 @@
+
+// export default Posts;
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import "../CSS/Posts.css"; // Import CSS file for styling
 
 const Posts = () => {
   const token = useSelector((state) => state.auth.token);
@@ -22,13 +25,8 @@ const Posts = () => {
           },
         }); 
 
-        console.log("All posts", allPostsResponse )
-        console.log("User posts", userPostsResponse )
         // Combine all posts and user's posts into a single array
         const mergedPosts = [...allPostsResponse.data, ...userPostsResponse.data];
-
-        // Sort the merged array by date or any other criteria if needed
-        // mergedPosts.sort((a, b) => (a.createdAt > b.createdAt ? -1 : 1));
 
         // Set the merged array to the state
         setAllPosts(mergedPosts);
@@ -38,16 +36,28 @@ const Posts = () => {
     };
 
     fetchPosts();
-  }, [token]);
+  }, [token]); // Make sure to include token in the dependency array
 
   return (
-    <div>
+    <div className="posts-container">
       {allPosts.map((post) => (
-        <div key={post._id}>
-          <div>{post.description}</div>
+        <div key={post._id} className="post">
+          <div className="user-info">
+            {post.userPicturePath && (
+              <img
+                src={`data:image/jpeg;base64,${post.userPicturePath}`}
+                alt="User"
+                className="user-photo"
+              />
+            )}
+            <strong className="user-name">{post.userName}</strong>
+          </div>
+          <div className="post-description">{post.description}</div>
+          <div className="user-info">
           {post.picturePath && (
-            <img src={`http://localhost:3000/images/${post.picturePath}`} alt="Post" />
+             <img src={`data:image/jpeg;base64,${post.picturePath}`} alt="Post" className="post-image" />
           )}
+          </div>
         </div>
       ))}
     </div>

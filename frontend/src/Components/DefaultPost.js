@@ -20,18 +20,18 @@ const DefaultPost = ({ isPostPic }) => {
 
   const handlePost = async () => {
     try {
-      const postData = {
-        description,
-        picturePath: picture ? picture.name : "" // Send picture name or an empty string if no picture
-      };
-  
-      await axios.post("http://localhost:3000/post/create", postData, {
+      const formData = new FormData();
+      formData.append("description", description);
+      if (picture) {
+        formData.append("picture", picture);
+      }
+
+      await axios.post("http://localhost:3000/post/create", formData, {
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       setModalOpen(false);
     } catch (error) {
       console.error("Error creating post:", error);
@@ -52,7 +52,6 @@ const DefaultPost = ({ isPostPic }) => {
       </div>
       <div className="mb-3">
         <input
-          placeholder="Picture"
           type="file"
           className="form-control"
           id="picture"

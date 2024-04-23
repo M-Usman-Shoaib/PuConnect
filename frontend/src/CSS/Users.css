@@ -1,0 +1,58 @@
+.container {
+    margin-bottom: 20px; /* Add some margin at the bottom */
+  }
+  
+  .title {
+    font-size: 20px;
+    margin-bottom: 10px; /* Add margin below the title */
+  }
+  
+  .list-container {
+    max-height: 300px; /* Set the maximum height for the scrollable list */
+    overflow-y: auto; /* Enable vertical scrolling */
+  }
+  
+  .list {
+    padding-right: 20px; /* Add right padding to avoid overlap with scrollbar */
+  }
+  
+  .user {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    background-color: #f9f9f9; /* Set background color to a light gray */
+    border-radius: 8px;
+    padding: 10px; /* Add padding to the user container */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add a subtle box shadow */
+  }
+  
+  .photo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+    flex-shrink: 0; /* Prevent photo from shrinking */
+  }
+  
+  .info {
+    flex-grow: 1;
+  }
+  
+  .name {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 3px;
+  }
+  
+  .roll-no {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 3px;
+  }
+  
+  .loading {
+    font-size: 18px;
+    text-align: center;
+    margin-top: 20px;
+  }
+  

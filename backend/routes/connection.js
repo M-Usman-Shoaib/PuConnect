@@ -2,6 +2,7 @@ const express = require("express");
 const passport = require("passport");
 const mongoose = require("mongoose");
 const User = require("../models/User");
+const ProfilePicture = require("../models/ProfilePicture")
 
 const router = express.Router();
 
@@ -232,6 +233,67 @@ router.patch("/removeFriend/:friendId", passport.authenticate("jwt", { session: 
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+// Route to fetch all users in the system
+router.get("/allUsers", passport.authenticate("jwt", { session: false }), async (req, res) => {
+  try {
+    // Find all users in the database
+    const allUsers = await User.find({}, { password: 0 }); // Exclude password from the response
+
+    if (!allUsers) {
+      return res.status(404).json({ message: "No users found" });
+    }
+
+    // Populate profile picture for each user
+    await Promise.all(allUsers.map(async (user) => {
+      const profilePicture = await ProfilePicture.findOne({ userId: user._id });
+      user.profilePic = profilePicture ? profilePicture.image : "/backend/image/defaultProfile.png"; // Add profile picture to user object
+    }));
+
+    // Return the list of all users with profile pictures
+    res.status(200).json(allUsers.map(user => ({
+      _id: user._id,
+      name: user.name,
+      rollNo: user.rollNo,
+      profilePic: user.profilePic // Include profile picture in response
+    })));
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+// Route to get all users in the friend list of the authenticated user
+router.get("/friends", passport.authenticate("jwt", { session: false }), async (req, res) => {
+  try {
+      // 1. Identify the user who is calling it
+      const user = req.user;
+
+      // 2. Retrieve all friends of the user
+      const friends = await User.find({ _id: { $in: user.sentRequest.map(friend => friend.friendId) } });
+
+      if (!friends) {
+          return res.status(404).json({ err: "No friends found" });
+      }
+
+       // Populate profile picture for each user
+    await Promise.all(friends.map(async (friend) => {
+      const profilePicture = await ProfilePicture.findOne({ userId: friend._id });
+      friend.profilePic = profilePicture ? profilePicture.image : "null"; // Assign default pic if profilePic is null
+    }));
+
+      // 4. Return the friends as a response
+      return res.status(200).json(friends.map(friend => ({
+          _id: friend._id,
+          name: friend.name,
+          rollNo: friend.rollNo,
+          profilePic: friend.profilePic 
+      })));
+  } catch (err) {
+      console.error(err);
+      return res.status(500).json({ err: "Internal Server Error" });
   }
 });
 
