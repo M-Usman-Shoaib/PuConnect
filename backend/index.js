@@ -107,7 +107,7 @@ app.use("/project", projectRoutes);
 app.use("/post", postRoutes)
 app.use("/connection", connectionRoutes);
 app.use("/profile-picture", profilePicRoutes)
-app.use("/job-postings", jobPostingRoutes)
+app.use("/job", jobPostingRoutes)
 app.use("/bg-banner", backgroundBannerRoutes)
 
 

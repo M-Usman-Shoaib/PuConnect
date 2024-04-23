@@ -1,38 +1,64 @@
 const express = require("express");
+const passport = require("passport");
 const router = express.Router();
 const JobPosting = require("../models/JobPosting");
+const ProfilePicture = require("../models/ProfilePicture"); // Import ProfilePicture model
+const multer = require('multer'); // Import multer for handling file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // Create a new job posting
-router.post("/", async (req, res) => {
+router.post("/create", passport.authenticate("jwt", { session: false }), async (req, res) => {
     try {
+        // 1. Identify the user who is calling it
+        const user = req.user;
+
+        // 2. Fetch user's profile picture from ProfilePicture model using the user ID
+        const profilePic = await ProfilePicture.findOne({ userId: user._id });
+        const userPic = profilePic ? profilePic.image : null;
+
+        // 3. Create the job posting object
+        const { companyName, email, jobTitle, jobFunction, jobLocation, seniorityLevel, description, employmentType, industryType, experience } = req.body;
+
+        // Check if required fields are provided
+        if (!companyName || !email || !jobTitle || !jobLocation || !description) {
+            return res.status(400).json({ error: "Required fields are missing!" });
+        }
+
+        // Create the job posting object
         const jobPosting = new JobPosting({
-            postedBy: req.body.postedBy, // Assuming postedBy is the user's ID
-            companyName: req.body.companyName,
-            email: req.body.email,
-            jobTitle: req.body.jobTitle,
-            jobFunction: req.body.jobFunction,
-            jobLocation: req.body.jobLocation,
-            numberofApplicants: req.body.numberofApplicants || 0,
-            seniorityLevel: req.body.seniorityLevel,
-            description: req.body.description,
-            postingDate: req.body.postingDate || Date.now(),
-            employmentType: req.body.employmentType,
-            industryType: req.body.industryType,
-            experience: req.body.experience,
+            postedBy: user._id, // Assuming postedBy is the user's ID
+            userName: user.name, // Add user's name
+            userPic,
+            companyName,
+            email,
+            jobTitle,
+            jobFunction,
+            jobLocation,
+            description,
+            seniorityLevel,
+            employmentType,
+            industryType,
+            experience,
+            postingDate: Date.now(),
         });
 
+        // 4. Save the job posting
         await jobPosting.save();
-        res.status(201).send(jobPosting);
+
+        // 5. Return a response
+        return res.status(201).json(jobPosting);
     } catch (error) {
-        res.status(400).send(error);
+        console.error("Error creating job posting:", error);
+        return res.status(400).json({ error: "Failed to create job posting!" });
     }
 });
 
 // Get all job postings
-router.get("/", async (req, res) => {
+router.get("/getAll", async (req, res) => {
     try {
-        const jobPostings = await JobPosting.find();
-        res.send(jobPostings);
+        const jobs = await JobPosting.find().populate('postedBy', 'name profilePic'); // Populate the postedBy field with user details
+        res.send(jobs);
     } catch (error) {
         res.status(500).send(error);
     }
