@@ -13,6 +13,8 @@ const { getToken } = require("../utilities/helpers");
 // Import the bcrypt library for password hashing and comparison
 const bcrypt = require("bcrypt");
 
+const ProfilePicture = require('../models/ProfilePicture');
+
 
 //This is the route for registering a user
 router.post("/register", async (req, res) => {
@@ -62,6 +64,10 @@ router.post("/register", async (req, res) => {
     };
 
     const newUser = await User.create(newUserDetails)
+
+    //Create default profile picture for the user
+    const defaultProfile = await ProfilePicture.findOrCreateDefault(newUser._id);
+
 
     // 4) Using the newUser to create a JWT and return the token to the user.
     const token = await getToken(email, newUser);
