@@ -4,6 +4,7 @@ import Skills from "../Components/Skills";
 import Projects from "../Components/Projects";
 import Experience from "../Components/Experience";
 import FriendList from "../Components/FriendList"; // Import the FriendRequests component
+import RequestList from "../Components/RequestList"; // Import the FriendRequests component
 
 
 const Profile = ({ showHalfProfile, isHomePage }) => {
@@ -24,12 +25,8 @@ const Profile = ({ showHalfProfile, isHomePage }) => {
             <Experience />
             <Skills />
             <Projects />
-
-            {/* Position FriendList in the top right corner */}
-            <div style={{ position: "absolute", top: 20, right: 100 }}>
-              <FriendList />
-            </div>
-
+            <FriendList />
+            <RequestList />y
           </div>
         )}
       </div>

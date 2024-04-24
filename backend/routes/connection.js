@@ -239,8 +239,8 @@ router.patch("/removeFriend/:friendId", passport.authenticate("jwt", { session: 
 // Route to fetch all users in the system
 router.get("/allUsers", passport.authenticate("jwt", { session: false }), async (req, res) => {
   try {
-    // Find all users in the database
-    const allUsers = await User.find({}, { password: 0 }); // Exclude password from the response
+    // Find all users in the database excluding the logged-in user
+    const allUsers = await User.find({ _id: { $ne: req.user._id } }, { password: 0 }); // Exclude password from the response
 
     if (!allUsers) {
       return res.status(404).json({ message: "No users found" });
@@ -265,6 +265,7 @@ router.get("/allUsers", passport.authenticate("jwt", { session: false }), async 
   }
 });
 
+
 // Route to get all users in the friend list of the authenticated user
 router.get("/friends", passport.authenticate("jwt", { session: false }), async (req, res) => {
   try {
@@ -272,7 +273,7 @@ router.get("/friends", passport.authenticate("jwt", { session: false }), async (
       const user = req.user;
 
       // 2. Retrieve all friends of the user
-      const friends = await User.find({ _id: { $in: user.sentRequest.map(friend => friend.friendId) } });
+      const friends = await User.find({ _id: { $in: user.friendsList.map(friend => friend.friendId) } });
 
       if (!friends) {
           return res.status(404).json({ err: "No friends found" });
@@ -296,5 +297,74 @@ router.get("/friends", passport.authenticate("jwt", { session: false }), async (
       return res.status(500).json({ err: "Internal Server Error" });
   }
 });
+
+// Route to get all users in the sent request list of the authenticated user
+router.get("/sentRequests", passport.authenticate("jwt", { session: false }), async (req, res) => {
+  try {
+      // 1. Identify the user who is calling it
+      const user = req.user;
+
+      // 2. Retrieve all friends of the user
+      const sentRequests = await User.find({ _id: { $in: user.sentRequest.map(friend => friend.friendId) } });
+
+      if (!sentRequests) { // Corrected variable name from 'friends' to 'sentRequests'
+          return res.status(404).json({ err: "No sent requests found" });
+      }
+
+      // Populate profile picture for each user
+      await Promise.all(sentRequests.map(async (friend) => {
+        const profilePicture = await ProfilePicture.findOne({ userId: friend._id });
+        friend.profilePic = profilePicture ? profilePicture.image : "null"; // Assign default pic if profilePic is null
+      }));
+
+      // 4. Return the sent requests as a response
+      return res.status(200).json(sentRequests.map(friend => ({
+          _id: friend._id,
+          name: friend.name,
+          rollNo: friend.rollNo,
+          profilePic: friend.profilePic 
+      })));
+  } catch (err) {
+      console.error(err);
+      return res.status(500).json({ err: "Internal Server Error" });
+  }
+});
+
+
+
+// Route to get all users in the sent request list of the authenticated user
+router.get("/receivedRequests", passport.authenticate("jwt", { session: false }), async (req, res) => {
+  try {
+      // 1. Identify the user who is calling it
+      const user = req.user;
+
+      // 2. Retrieve all friends of the user
+      const requests = await User.find({ _id: { $in: user.request.map(friend => friend.friendId) } });
+
+      if (!requests) {
+          return res.status(404).json({ err: "No friends found" });
+      }
+
+       // Populate profile picture for each user
+    await Promise.all(requests.map(async (friend) => {
+      const profilePicture = await ProfilePicture.findOne({ userId: friend._id });
+      friend.profilePic = profilePicture ? profilePicture.image : "null"; // Assign default pic if profilePic is null
+    }));
+
+      // 4. Return the friends as a response
+      return res.status(200).json(requests.map(friend => ({
+          _id: friend._id,
+          name: friend.name,
+          rollNo: friend.rollNo,
+          profilePic: friend.profilePic 
+      })));
+  } catch (err) {
+      console.error(err);
+      return res.status(500).json({ err: "Internal Server Error" });
+  }
+});
+
+
+
 
 module.exports = router;

@@ -12,6 +12,7 @@ const Home = () => {
   const navigate = useNavigate();
   const [showAlert, setShowAlert] = useState(false);
 
+
   useEffect(() => {
     // Show an alert if the user is not authenticated
     if (!isAuthenticated) {
